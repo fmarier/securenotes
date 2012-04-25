@@ -1,7 +1,10 @@
+<script src="https://browserid.org/include.js"></script>
 <script src="/login.js"></script>
+
+<form id="login-form" method="POST" action="/login">
+<input id="assertion-field" type="hidden" name="assertion" value="">
+</form>
 
 <h2>Sign Into SecureNotes</h2>
 
-<form method="post" action="/login">
-<input type="submit" value="go" />
-</form>
+<div><a href="javascript:login()">Signin</a></div>

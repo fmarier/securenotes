@@ -8,7 +8,7 @@ const
 fs = require('fs'),
 path = require('path'),
 url = require('url'),
-http = require('http');
+http = require('http'),
 urlparse = require('urlparse'),
 express = require('express');
 
