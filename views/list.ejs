@@ -2,7 +2,20 @@
 <% if (notes) { %>
    <ul>
    <% notes.forEach(function (note) { %>
-   <li><a href="/view?note=<%= note.id %>"><%=: note.name| capitalize %></a></li>
+   <% if (!note.deleted) { %>
+      <li>
+      <a href="/view?note=<%= note.id %>"><%=: note.name| capitalize %></a>
+      <form action="/delete" method="POST">
+      <input type="submit" value="Delete">
+   <% } else { %>
+      <!--<li class="hidden">--><li>
+      <s><%=: note.name| capitalize %></s>
+      <form action="/undelete" method="POST">
+      <input type="submit" value="Undelete">
+   <% } %>
+   <input type="hidden" name="id" value="<%= note.id %>">
+   </form>
+   </li>
    <% }); %>
    </ul>
 <% } else { %>
