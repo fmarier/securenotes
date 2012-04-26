@@ -1,0 +1,12 @@
+<h2>Your encrypted notes</h2>
+<% if (notes) { %>
+   <ul>
+   <% notes.forEach(function (note) { %>
+   <li><a href="/view?note=<%= note.id %>"><%=: note.name| capitalize %></a></li>
+   <% }); %>
+   </ul>
+<% } else { %>
+   <p>You don't have any!</p>
+<% } %>
+
+<p><a href="/new">Create a new encrypted note</a></p>
