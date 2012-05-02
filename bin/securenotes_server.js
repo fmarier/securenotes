@@ -15,10 +15,8 @@ express = require('express');
 const
 wsapi = require('../lib/wsapi.js'),
 httputils = require('../lib/httputils.js'),
+conf = require('../lib/configuration.js'),
 logger = require('../lib/logging.js').logger;
-
-const HOST = "localhost";
-const PORT = 8000;
 
 var app = express.createServer();
 
@@ -86,6 +84,6 @@ app.use(function(req, res,next) {
   res.end();
 });
 
-app.listen(PORT, function() {
+app.listen(conf.get('bind_to').port, function() {
   logger.info("running on "+ app.address().address + ":" + app.address().port);
 });

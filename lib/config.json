@@ -1,0 +1,10 @@
+{
+    "database": {
+        "name": "securenotes",
+        "user": "nodeuser",
+        "password": "nodeuser"
+    },
+    "bind_to": {
+        "port": 8000
+    }
+}
