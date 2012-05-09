@@ -1,0 +1,43 @@
+<script src="https://browserid.org/include.js"></script>
+<script src="/crypto.js"></script>
+
+<% if (wrappedKey) { %>
+
+<script>
+var assertion = "<% assertion %>";
+var wrappedKey = "<% wrappedKey %>";
+
+unwrapKey(
+    assertion, wrappedKey, function (realKey) {
+        storeLocalKey(realKey);
+        $("#message").text('All done');
+
+        window.location = '/list';
+    });
+</script>
+
+<p id="message">Unwrapping your key...</p>
+
+<% } else { %>
+
+<script>
+var assertion = "<% assertion %>";
+
+generateUserKey(
+    assertion, function (realKey, wrappedKey) {
+        storeLocalKey(realKey);
+
+        var data = {wrappedKey: wrappedKey}; // TODO: add CSRF protection
+        $.post('/loggedin', data, function (res) {
+                   // TODO: check for errors
+                   $("#message").text('All done');
+                   window.location = '/list';
+                }, 'json');
+    });
+</script>
+
+<p id="message">Generating a key...</p>
+
+<% } %>
+
+</script>

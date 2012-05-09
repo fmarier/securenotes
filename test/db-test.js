@@ -235,6 +235,50 @@ suite.addBatch(
         }
     });
 
+suite.addBatch(
+    {
+        "a new user": {
+            topic: function () {
+                var that = this;
+                users.create_user(
+                    TEST_EMAIL, function (email) {
+                        users.get_account(email, that.callback);
+                    });
+            },
+            "has no key": function (user_id, wrapped_key) {
+                assert.isNull(wrapped_key);
+            },
+            "can set a key": {
+                topic: function () {
+                    var that = this;
+                    users.get_account(
+                        TEST_EMAIL, function (user_id) {
+                            users.set_key(user_id, 'wrapped key', that.callback);
+                        });
+                },
+                "succesfully": function (r) {
+                    assert.ok(true); // TODO: check for lack of errors
+                },
+                "and read it": {
+                    topic: function () {
+                        users.get_account(TEST_EMAIL, this.callback);
+                    },
+                    "successfully": function (user_id, wrapped_key) {
+                        assert.strictEqual(wrapped_key, 'wrapped key');
+                    }
+                },
+                "before getting deleted": {
+                    topic: function () {
+                        users.delete_user(TEST_EMAIL, this.callback);
+                    },
+                    "successfully": function () {
+                        assert.ok(true); // TODO: check for lack of errors
+                    }
+                }
+            }
+        }
+    });
+
 // run or export the suite.
 if (process.argv[1] === __filename) suite.run();
 else suite.export(module);
