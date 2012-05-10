@@ -86,4 +86,5 @@ app.use(function(req, res,next) {
 
 app.listen(conf.get('bind_to').port, function() {
   logger.info("running on "+ app.address().address + ":" + app.address().port);
+  console.log('Login page at: http://' + conf.get('bind_to').host + ":" + app.address().port + "/login");
 });
