@@ -242,10 +242,13 @@ suite.addBatch(
                 var that = this;
                 users.create_user(
                     TEST_EMAIL, function (email) {
-                        users.get_account(email, that.callback);
+                        users.get_account(
+                            email, function (user_id) {
+                                users.get_key(user_id, that.callback);
+                            });
                     });
             },
-            "has no key": function (user_id, wrapped_key) {
+            "has no key": function (wrapped_key) {
                 assert.isNull(wrapped_key);
             },
             "can set a key": {
@@ -259,20 +262,48 @@ suite.addBatch(
                 "succesfully": function (r) {
                     assert.ok(true); // TODO: check for lack of errors
                 },
-                "and read it": {
+                "which": {
                     topic: function () {
-                        users.get_account(TEST_EMAIL, this.callback);
+                        var that = this;
+                        users.get_account(
+                            TEST_EMAIL, function (user_id) {
+                                users.get_key(user_id, that.callback);
+                            });
                     },
-                    "successfully": function (user_id, wrapped_key) {
+                    "can be read": function (wrapped_key) {
                         assert.strictEqual(wrapped_key, 'wrapped key');
-                    }
-                },
-                "before getting deleted": {
-                    topic: function () {
-                        users.delete_user(TEST_EMAIL, this.callback);
                     },
-                    "successfully": function () {
-                        assert.ok(true); // TODO: check for lack of errors
+                    "cannot": {
+                        topic: function () {
+                            var that = this;
+                            users.get_account(
+                                TEST_EMAIL, function (user_id) {
+                                    users.set_key(user_id, 'another wrapped key', that.callback);
+                                });
+                        },
+                        "be overwritten": function (r) {
+                            assert.strictEqual(r, '{"success": true}');
+                        },
+                        "lose its value": {
+                            topic: function () {
+                                var that = this;
+                                users.get_account(
+                                    TEST_EMAIL, function (user_id) {
+                                        users.get_key(user_id, that.callback);
+                                    });
+                            },
+                            "once it has been set": function (wrapped_key) {
+                                assert.strictEqual(wrapped_key, 'wrapped key');
+                            },
+                            "until the user is deleted": {
+                                topic: function () {
+                                    users.delete_user(TEST_EMAIL, this.callback);
+                                },
+                                "successfully": function () {
+                                    assert.ok(true); // TODO: check for lack of errors
+                                }
+                            }
+                        }
                     }
                 }
             }

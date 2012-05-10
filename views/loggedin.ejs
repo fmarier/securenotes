@@ -1,43 +1,23 @@
 <script src="https://browserid.org/include.js"></script>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.0/build/rollups/sha256.js"></script>
 <script src="/crypto.js"></script>
+<script src="/loggedin.js"></script>
 
-<% if (wrappedKey) { %>
-
-<script>
-var assertion = "<% assertion %>";
-var wrappedKey = "<% wrappedKey %>";
-
-unwrapKey(
-    assertion, wrappedKey, function (realKey) {
-        storeLocalKey(realKey);
-        $("#message").text('All done');
-
-        window.location = '/list';
-    });
-</script>
-
-<p id="message">Unwrapping your key...</p>
-
-<% } else { %>
+<p id="message"></p>
 
 <script>
 var assertion = "<% assertion %>";
 
-generateUserKey(
-    assertion, function (realKey, wrappedKey) {
-        storeLocalKey(realKey);
+$.get(
+    '/wrappedkey', null, function (r) {
+        // TODO: check for errors
+        var wrappedKey = r.wrappedKey;
 
-        var data = {wrappedKey: wrappedKey}; // TODO: add CSRF protection
-        $.post('/loggedin', data, function (res) {
-                   // TODO: check for errors
-                   $("#message").text('All done');
-                   window.location = '/list';
-                }, 'json');
-    });
-</script>
-
-<p id="message">Generating a key...</p>
-
-<% } %>
+        if (wrappedKey) {
+            doUnwrap(assertion, wrappedKey);
+        } else {
+            doGenerate(assertion);
+        }
+    }, 'json');
 
 </script>
