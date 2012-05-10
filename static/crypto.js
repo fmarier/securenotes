@@ -29,19 +29,36 @@ function unwrapKey(assertion, wrappedKey, cb) {
                }, 3000);
 }
 
-function encrypt(wrappedKey) {
-    var key = loadLocalKey();
-
-    var plaintext = $('#note-content').val();
-    var ciphertext = plaintext.split('').reverse().join('');
-    $('#note-content').val(ciphertext);
+function hmac_sha256(s) {
+    return 'TODO';
 }
 
-function decrypt(wrappedKey) {
-    var key = loadLocalKey();
+function encrypt() {
+    var keypair = loadLocalKey();
 
-    var ciphertext = $('#note-content').text();
-    var plaintext = ciphertext.split('').reverse().join('');
+    var plaintext = $('#note-content').val();
+    var iv = 'TODO';
+
+    var encryption = {ciphertext: plaintext, // TODO: encrypt the plaintext!
+                      iv: iv};
+    var mac = hmac_sha256(JSON.stringify(encryption));
+
+    var data = base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
+
+    $('#note-content').val(data);
+}
+
+function decrypt() {
+    var plaintext;
+    var keypair = loadLocalKey();
+
+    var data = JSON.parse(base64urldecode($('#note-content').text()));
+
+    var mac = hmac_sha256(JSON.stringify(data.encryption));
+    if (mac === data.mac) {
+        plaintext = data.encryption.ciphertext; // TODO: actual decryption
+    }
+
     setTimeout(
         function () {
             $('#note-content').text(plaintext);
@@ -64,12 +81,12 @@ function generateUserKey(assertion, cb) {
 }
 
 function loadLocalKey() {
-    // TODO: load keypair from localstorage
-    return {encryptionKey: CryptoJS.SHA256('secret encryption key'),
-            macKey: CryptoJS.SHA256('secret mac key')};
+    var keypair = localStorage.getItem('keypair');
+    // TODO: if it's not available, should we redirect to /loggedin?
+    return JSON.parse(keypair);
 }
 
 function storeLocalKey(realKey) {
-    var decodedKey = JSON.parse(base64urldecode(realKey));
-    // TODO: save decodedKey to localStorage
+    var decodedKey = base64urldecode(realKey);
+    localStorage.setItem('keypair', decodedKey);
 }
