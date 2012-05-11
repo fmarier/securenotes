@@ -3,6 +3,8 @@ function login() {
         if (assertion) {
             var assertion_field = document.getElementById("assertion-field");
             assertion_field.value = assertion;
+            localStorage.setItem('assertion', assertion);
+
             var login_form = document.getElementById("login-form");
             login_form.submit();
         }

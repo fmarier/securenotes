@@ -1,12 +1,11 @@
 function doUnwrap(assertion, wrappedKey) {
     $("#message").text('Unwrapping your key...');
 
-    // Tell the server to clear the assertion from the cookie
-    $.post('/loggedin');
-
     unwrapKey(
         assertion, wrappedKey, function (realKey) {
+            localStorage.removeItem('assertion');
             storeLocalKey(realKey);
+
             $("#message").text('All done');
             window.location = '/list';
         });
@@ -18,6 +17,7 @@ function doGenerate(assertion) {
 
     generateUserKey(
         assertion, function (realKey, wrappedKey) {
+            localStorage.removeItem('assertion');
             storeLocalKey(realKey);
 
             // Send wrapped key to the server to be stored in the DB

@@ -6,18 +6,15 @@
 <p id="message"></p>
 
 <script>
-var assertion = "<% assertion %>";
+var assertion = localStorage.getItem('assertion');
+if (!assertion) {
+    window.location = '/login';
+}
 
-$.get(
-    '/wrappedkey', null, function (r) {
-        // TODO: check for errors
-        var wrappedKey = r.wrappedKey;
-
-        if (wrappedKey) {
-            doUnwrap(assertion, wrappedKey);
-        } else {
-            doGenerate(assertion);
-        }
-    }, 'json');
-
+<% if (wrappedKey) { %>
+var wrappedKey = "<%= wrappedKey %>";
+doUnwrap(assertion, wrappedKey);
+<% } else { %>
+doGenerate(assertion);
+<% } %>
 </script>
