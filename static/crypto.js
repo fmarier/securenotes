@@ -26,7 +26,7 @@ function unwrapKey(assertion, wrappedKey, cb) {
     setTimeout(function () {
                    var key = wrappedKey.split('').reverse().join('');
                    cb(key);
-               }, 3000);
+               }, 2000);
 }
 
 function hmac_sha256(s) {
@@ -77,7 +77,7 @@ function generateUserKey(assertion, cb) {
                    var wrappedKey = key.split('').reverse().join('');
 
                    cb(key, wrappedKey);
-               }, 3000);
+               }, 2000);
 }
 
 function loadLocalKey() {
