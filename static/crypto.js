@@ -34,6 +34,10 @@ function hmac_sha256(s) {
 }
 
 function encrypt() {
+    $('#note-content').attr('readonly', true);
+    $('#encrypt-button').hide();
+    $('#encryption-message').text('Encrypting message...');
+
     var keypair = loadLocalKey();
 
     var plaintext = $('#note-content').val();
@@ -45,10 +49,18 @@ function encrypt() {
 
     var data = base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
 
-    $('#note-content').val(data);
+    setTimeout(
+        function () {
+            $('#note-content').val(data);
+            $('#encryption-message').text('Decryption completed');
+            $('#save-button').removeAttr('disabled');
+        }, 1000);
 }
 
 function decrypt() {
+    $('#decrypt-button').hide();
+    $('#decryption-message').text('Decrypting message...');
+
     var plaintext;
     var keypair = loadLocalKey();
 
@@ -62,7 +74,8 @@ function decrypt() {
     setTimeout(
         function () {
             $('#note-content').text(plaintext);
-        }, 500);
+            $('#decryption-message').text('Decryption completed');
+        }, 1000);
 }
 
 function sha256hex(s) {
