@@ -1,26 +1,6 @@
-// TODO: include jwcrypto directly and remove this copy of the code?
-function base64urlencode(arg) {
-    var s = window.btoa(arg);
-    s = s.split('=')[0]; // Remove any trailing '='s
-    s = s.replace(/\+/g, '-'); // 62nd char of encoding
-    s = s.replace(/\//g, '_'); // 63rd char of encoding
-    return s;
-}
-
-// TODO: include jwcrypto directly and remove this copy of the code?
-function base64urldecode(arg) {
-    var s = arg;
-    s = s.replace(/-/g, '+'); // 62nd char of encoding
-    s = s.replace(/_/g, '/'); // 63rd char of encoding
-    switch (s.length % 4) // Pad with trailing '='s
-    {
-    case 0: break; // No pad chars in this case
-    case 2: s += "=="; break; // Two pad chars
-    case 3: s += "="; break; // One pad char
-    default: throw new InputException("Illegal base64url string!");
-    }
-    return window.atob(s); // Standard base64 decoder
-}
+// FIXME: these /lib/ (hardcoded in bidbundle.js) are a bit undesirable since they don't match the file layout of this project
+var jwcrypto = require('./lib/jwcrypto.js');
+var jwcryptoutils = require('./lib/utils.js');
 
 function unwrapKey(assertion, wrappedKey, cb) {
     setTimeout(function () {
@@ -43,11 +23,11 @@ function encrypt() {
     var plaintext = $('#note-content').val();
     var iv = 'TODO';
 
-    var encryption = {ciphertext: plaintext, // TODO: encrypt the plaintext!
+    var encryption = {ciphertext: jwcrypto.encrypt(plaintext, keypair),
                       iv: iv};
     var mac = hmac_sha256(JSON.stringify(encryption));
 
-    var data = base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
+    var data = jwcryptoutils.base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
 
     setTimeout(
         function () {
@@ -64,11 +44,11 @@ function decrypt() {
     var plaintext;
     var keypair = loadLocalKey();
 
-    var data = JSON.parse(base64urldecode($('#note-content').text()));
+    var data = JSON.parse(jwcryptoutils.base64urldecode($('#note-content').text()));
 
     var mac = hmac_sha256(JSON.stringify(data.encryption));
     if (mac === data.mac) {
-        plaintext = data.encryption.ciphertext; // TODO: actual decryption
+        plaintext = jwcrypto.decrypt(data.encryption.ciphertext, keypair);
     }
 
     setTimeout(
@@ -84,7 +64,7 @@ function sha256hex(s) {
 
 function generateUserKey(assertion, cb) {
     setTimeout(function () {
-                   var key = base64urlencode(JSON.stringify(
+                   var key = jwcryptoutils.base64urlencode(JSON.stringify(
                        {encryptionKey: sha256hex('secret encryption key'),
                         macKey: sha256hex('secret mac key')}));
                    var wrappedKey = key.split('').reverse().join('');
@@ -100,6 +80,6 @@ function loadLocalKey() {
 }
 
 function storeLocalKey(realKey) {
-    var decodedKey = base64urldecode(realKey);
+    var decodedKey = jwcryptoutils.base64urldecode(realKey);
     localStorage.setItem('keypair', decodedKey);
 }
