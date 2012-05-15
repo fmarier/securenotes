@@ -1,10 +1,11 @@
 // FIXME: these /lib/ (hardcoded in bidbundle.js) are a bit undesirable since they don't match the file layout of this project
 var jwcrypto = require('./lib/jwcrypto.js');
 var jwcryptoutils = require('./lib/utils.js');
+var jwcryptolibs = require('./libs/minimal.js');
 
 function unwrapKey(assertion, wrappedKey, cb) {
     setTimeout(function () {
-                   var key = wrappedKey.split('').reverse().join('');
+                   var key = wrappedKey.split('').reverse().join(''); // TODO: actually unwrap the key
                    cb(key);
                }, 2000);
 }
@@ -23,16 +24,15 @@ function encrypt() {
     var plaintext = $('#note-content').val();
     var iv = 'TODO';
 
-    var encryption = {ciphertext: jwcrypto.encrypt(plaintext, keypair),
-                      iv: iv};
-    var mac = hmac_sha256(JSON.stringify(encryption));
+    var encryption = jwcrypto.encrypt(plaintext, keypair);
+    var mac = hmac_sha256(JSON.stringify(encryption)); // TODO: do we need to mac the result?
 
     var data = jwcryptoutils.base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
 
     setTimeout(
         function () {
             $('#note-content').val(data);
-            $('#encryption-message').text('Decryption completed');
+            $('#encryption-message').text('Encryption completed');
             $('#save-button').removeAttr('disabled');
         }, 1000);
 }
@@ -48,7 +48,7 @@ function decrypt() {
 
     var mac = hmac_sha256(JSON.stringify(data.encryption));
     if (mac === data.mac) {
-        plaintext = jwcrypto.decrypt(data.encryption.ciphertext, keypair);
+        plaintext = jwcrypto.decrypt(data.encryption, keypair);
     }
 
     setTimeout(
@@ -58,16 +58,12 @@ function decrypt() {
         }, 1000);
 }
 
-function sha256hex(s) {
-    return CryptoJS.SHA256(s).toString(CryptoJS.enc.Hex);
-}
-
 function generateUserKey(assertion, cb) {
     setTimeout(function () {
                    var key = jwcryptoutils.base64urlencode(JSON.stringify(
-                       {encryptionKey: sha256hex('secret encryption key'),
-                        macKey: sha256hex('secret mac key')}));
-                   var wrappedKey = key.split('').reverse().join('');
+                       {encryptionKey: jwcryptolibs.sjcl.hash.sha256.hash('secret encryption key'),
+                        macKey: jwcryptolibs.sjcl.hash.sha256.hash('secret mac key')}));
+                   var wrappedKey = key.split('').reverse().join(''); // TODO: actually wrap the key!
 
                    cb(key, wrappedKey);
                }, 2000);
