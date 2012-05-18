@@ -46,6 +46,8 @@ suite.addBatch(
     }
 );
 
+var userId; // Will hold the ID of the test user account we created above
+
 // TODO: test error conditions
 suite.addBatch(
     {
@@ -54,6 +56,7 @@ suite.addBatch(
                 var cb = this.callback;
                 users.get_account(
                     TEST_EMAIL, function (user_id) {
+                        userId = user_id;
                         notes.get_notes(user_id, cb);
                     });
             },
@@ -64,17 +67,14 @@ suite.addBatch(
             "can create a new note": {
                 topic: function () {
                     var cb = this.callback;
-                    users.get_account(
-                        TEST_EMAIL, function (user_id) {
-                            notes.create_note(
-                                "Note 1", "Content 1", user_id, function () {
-                                    notes.get_notes(
-                                        user_id, function (r) {
-                                            var note_id = r[0].id;
-                                            notes.view_note(
-                                                note_id, user_id, function (note) {
-                                                    cb(r, note);
-                                                });
+                    notes.create_note(
+                        "Note 1", "Content 1", userId, function () {
+                            notes.get_notes(
+                                userId, function (r) {
+                                    var note_id = r[0].id;
+                                    notes.view_note(
+                                        note_id, userId, function (note) {
+                                            cb(r, note);
                                         });
                                 });
                         });
@@ -107,24 +107,27 @@ var data = [
     {name: 'Note 4', content: 'Content 4'}
 ];
 
+var dbNotes; // Will hold the last note objects from the DB
+
 // TODO: test error conditions
 suite.addBatch(
     {
         "creating multiple notes": {
             topic: function () {
                 var cb = this.callback;
-                users.get_account(
-                    TEST_EMAIL, function (user_id) {
-                        var count = 0;
-                        data.forEach(
-                            function (v) {
-                                notes.create_note(
-                                    v.name, v.content, user_id, function () {
-                                        count += 1;
-                                        if (count === data.length) {
-                                            notes.get_notes(user_id, cb);
-                                        }
-                                    });
+                var count = 0;
+                data.forEach(
+                    function (v) {
+                        notes.create_note(
+                            v.name, v.content, userId, function () {
+                                count += 1;
+                                if (count === data.length) {
+                                    notes.get_notes(
+                                        userId, function (r) {
+                                            dbNotes = r;
+                                            cb(r);
+                                        });
+                                }
                             });
                     });
             },
@@ -140,21 +143,19 @@ suite.addBatch(
             "that can be deleted": {
                 topic: function () {
                     var cb = this.callback;
-                    users.get_account(
-                        TEST_EMAIL, function (user_id) {
-                            notes.get_notes(
-                                user_id, function (r) {
-                                    var count = 0;
-                                    r.forEach(
-                                        function (note) {
-                                            notes.delete_note(
-                                                note.id, user_id, function () {
-                                                    count += 1;
-                                                    if (count === data.length) {
-                                                        notes.get_notes(user_id, cb);
-                                                    }
-                                                });
-                                        });
+                    var count = 0;
+                    dbNotes.forEach(
+                        function (note) {
+                            notes.delete_note(
+                                note.id, userId, function () {
+                                    count += 1;
+                                    if (count === data.length) {
+                                        notes.get_notes(
+                                            userId, function (r) {
+                                                dbNotes = r;
+                                                cb(r);
+                                            });
+                                    }
                                 });
                         });
                 },
@@ -168,21 +169,15 @@ suite.addBatch(
                 "and undeleted": {
                     topic: function () {
                         var cb = this.callback;
-                        users.get_account(
-                            TEST_EMAIL, function (user_id) {
-                                notes.get_notes(
-                                    user_id, function (r) {
-                                        var count = 0;
-                                        r.forEach(
-                                            function (note) {
-                                                notes.undelete_note(
-                                                    note.id, user_id, function () {
-                                                        count += 1;
-                                                        if (count === data.length) {
-                                                            notes.get_notes(user_id, cb);
-                                                        }
-                                                    });
-                                            });
+                        var count = 0;
+                        dbNotes.forEach(
+                            function (note) {
+                                notes.undelete_note(
+                                    note.id, userId, function () {
+                                        count += 1;
+                                        if (count === data.length) {
+                                            notes.get_notes(userId, cb);
+                                        }
                                     });
                             });
                     },
@@ -202,55 +197,35 @@ suite.addBatch(
     {
         "a new user": {
             topic: function () {
-                var cb = this.callback;
-                users.get_account(
-                    TEST_EMAIL, function (user_id) {
-                        users.get_key(user_id, cb);
-                    });
+                users.get_key(userId, this.callback);
             },
             "has no key": function (wrapped_key) {
                 assert.isNull(wrapped_key);
             },
             "can set a key": {
                 topic: function () {
-                    var cb = this.callback;
-                    users.get_account(
-                        TEST_EMAIL, function (user_id) {
-                            users.set_key(user_id, 'wrapped key', cb);
-                        });
+                    users.set_key(userId, 'wrapped key', this.callback);
                 },
                 "succesfully": function (r) {
                     assert.ok(true); // TODO: check for lack of errors
                 },
                 "which": {
                     topic: function () {
-                        var cb = this.callback;
-                        users.get_account(
-                            TEST_EMAIL, function (user_id) {
-                                users.get_key(user_id, cb);
-                            });
+                        users.get_key(userId, this.callback);
                     },
                     "can be read": function (wrapped_key) {
                         assert.strictEqual(wrapped_key, 'wrapped key');
                     },
                     "cannot": {
                         topic: function () {
-                            var cb = this.callback;
-                            users.get_account(
-                                TEST_EMAIL, function (user_id) {
-                                    users.set_key(user_id, 'another wrapped key', cb);
-                                });
+                            users.set_key(userId, 'another wrapped key', this.callback);
                         },
                         "be overwritten": function (r) {
                             assert.strictEqual(r, '{"success": true}');
                         },
                         "lose its value": {
                             topic: function () {
-                                var cb = this.callback;
-                                users.get_account(
-                                    TEST_EMAIL, function (user_id) {
-                                        users.get_key(user_id, cb);
-                                    });
+                                users.get_key(userId, this.callback);
                             },
                             "once it has been set": function (wrapped_key) {
                                 assert.strictEqual(wrapped_key, 'wrapped key');
