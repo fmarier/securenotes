@@ -15,7 +15,7 @@ suite.options.error = false;
 
 const TEST_EMAIL = 'person@example.com';
 
-// TODO: test error conditions
+// Setup / test account creation
 suite.addBatch(
     {
         "account creation": {
@@ -32,56 +32,38 @@ suite.addBatch(
                 "which exists": function (r){
                     assert.ok(r);
                 },
-                "which": {
+                "which contains": {
                     topic: function () {
                         users.get_account(TEST_EMAIL, this.callback);
                     },
-                    "contains a reasonable ID": function (r) {
+                    "a reasonable ID": function (r) {
                         assert.isNumber(r);
                         assert.strictEqual(r > 0, true);
-                    },
-                    "can be deleted": {
-                        topic: function () {
-                            users.delete_user(TEST_EMAIL, this.callback);
-                        },
-                        "without errors": function () {
-                            assert.ok(true); // TODO: once we return errors, this won't have to be so pointless
-                        },
-                        "and when looking for it": {
-                            topic: function () {
-                                users.account_exists(TEST_EMAIL, this.callback);
-                            },
-                            "it is gone": function (r){
-                                assert.ok(!r);
-                            }
-                        }
                     }
                 }
             }
         }
-    });
+    }
+);
 
 // TODO: test error conditions
 suite.addBatch(
     {
         "a new user": {
             topic: function () {
-                var that = this;
-                users.create_user(
-                    TEST_EMAIL, function (email) {
-                        users.get_account(
-                            email, function (user_id) {
-                                notes.get_notes(user_id, that.callback);
-                            });
+                var cb = this.callback;
+                users.get_account(
+                    TEST_EMAIL, function (user_id) {
+                        notes.get_notes(user_id, cb);
                     });
             },
             "has no notes": function (r) {
                 assert.isArray(r);
                 assert.strictEqual(r.length, 0);
             },
-            "can create new notes": {
+            "can create a new note": {
                 topic: function () {
-                    var that = this;
+                    var cb = this.callback;
                     users.get_account(
                         TEST_EMAIL, function (user_id) {
                             notes.create_note(
@@ -91,17 +73,17 @@ suite.addBatch(
                                             var note_id = r[0].id;
                                             notes.view_note(
                                                 note_id, user_id, function (note) {
-                                                    that.callback(r, note);
+                                                    cb(r, note);
                                                 });
                                         });
                                 });
                         });
                 },
-                "that exist": function (r) {
+                "that exists": function (r) {
                     assert.isArray(r);
                     assert.strictEqual(r.length, 1);
                 },
-                "that look reasonable": function (r) {
+                "that looks reasonable": function (r) {
                     var element = r[0];
                     assert.isObject(element);
                     assert.isNumber(element.id);
@@ -109,18 +91,10 @@ suite.addBatch(
                     assert.strictEqual(element.deleted, 0);
                     assert.strictEqual(element.name, 'Note 1');
                 },
-                "that have the expected content": function (r, note) {
+                "that has the expected content": function (r, note) {
                     assert.isObject(note);
                     assert.strictEqual(note.content, 'Content 1');
                     assert.strictEqual(note.name, r[0].name);
-                },
-                "before deleting the user account": {
-                    topic: function () {
-                        users.delete_user(TEST_EMAIL, this.callback);
-                    },
-                    "successfully": function () {
-                        assert.ok(true); // TODO: check for lack of errors
-                    }
                 }
             }
         }
@@ -138,28 +112,25 @@ suite.addBatch(
     {
         "creating multiple notes": {
             topic: function () {
-                var that = this;
-                users.create_user(
-                    TEST_EMAIL, function (email) {
-                        users.get_account(
-                            email, function (user_id) {
-                                var count = 0;
-                                data.forEach(
-                                    function (v) {
-                                        notes.create_note(
-                                            v.name, v.content, user_id, function () {
-                                                count += 1;
-                                                if (count === data.length) {
-                                                    notes.get_notes(user_id, that.callback);
-                                                }
-                                            });
+                var cb = this.callback;
+                users.get_account(
+                    TEST_EMAIL, function (user_id) {
+                        var count = 0;
+                        data.forEach(
+                            function (v) {
+                                notes.create_note(
+                                    v.name, v.content, user_id, function () {
+                                        count += 1;
+                                        if (count === data.length) {
+                                            notes.get_notes(user_id, cb);
+                                        }
                                     });
                             });
                     });
             },
             "returns the expected array": function (r) {
                 assert.isArray(r);
-                assert.strictEqual(r.length, data.length);
+                assert.strictEqual(r.length, data.length + 1);
             },
             "gives non-deleted notes": function (r) {
                 r.forEach(function (note) {
@@ -168,7 +139,7 @@ suite.addBatch(
             },
             "that can be deleted": {
                 topic: function () {
-                    var that = this;
+                    var cb = this.callback;
                     users.get_account(
                         TEST_EMAIL, function (user_id) {
                             notes.get_notes(
@@ -180,7 +151,7 @@ suite.addBatch(
                                                 note.id, user_id, function () {
                                                     count += 1;
                                                     if (count === data.length) {
-                                                        notes.get_notes(user_id, that.callback);
+                                                        notes.get_notes(user_id, cb);
                                                     }
                                                 });
                                         });
@@ -189,14 +160,14 @@ suite.addBatch(
                 },
                 "successfully": function (r) {
                     assert.isArray(r);
-                    assert.strictEqual(r.length, data.length);
+                    assert.strictEqual(r.length, data.length + 1);
                     r.forEach(function (note) {
                                   assert.strictEqual(note.deleted, 1);
                               });
                 },
                 "and undeleted": {
                     topic: function () {
-                        var that = this;
+                        var cb = this.callback;
                         users.get_account(
                             TEST_EMAIL, function (user_id) {
                                 notes.get_notes(
@@ -208,7 +179,7 @@ suite.addBatch(
                                                     note.id, user_id, function () {
                                                         count += 1;
                                                         if (count === data.length) {
-                                                            notes.get_notes(user_id, that.callback);
+                                                            notes.get_notes(user_id, cb);
                                                         }
                                                     });
                                             });
@@ -217,18 +188,10 @@ suite.addBatch(
                     },
                     "successfully": function (r) {
                         assert.isArray(r);
-                        assert.strictEqual(r.length, data.length);
+                        assert.strictEqual(r.length, data.length + 1);
                         r.forEach(function (note) {
                                       assert.strictEqual(note.deleted, 0);
                                   });
-                    },
-                    "before deleting the user account": {
-                        topic: function () {
-                            users.delete_user(TEST_EMAIL, this.callback);
-                        },
-                        "successfully": function () {
-                            assert.ok(true); // TODO: check for lack of errors
-                        }
                     }
                 }
             }
@@ -239,13 +202,10 @@ suite.addBatch(
     {
         "a new user": {
             topic: function () {
-                var that = this;
-                users.create_user(
-                    TEST_EMAIL, function (email) {
-                        users.get_account(
-                            email, function (user_id) {
-                                users.get_key(user_id, that.callback);
-                            });
+                var cb = this.callback;
+                users.get_account(
+                    TEST_EMAIL, function (user_id) {
+                        users.get_key(user_id, cb);
                     });
             },
             "has no key": function (wrapped_key) {
@@ -253,10 +213,10 @@ suite.addBatch(
             },
             "can set a key": {
                 topic: function () {
-                    var that = this;
+                    var cb = this.callback;
                     users.get_account(
                         TEST_EMAIL, function (user_id) {
-                            users.set_key(user_id, 'wrapped key', that.callback);
+                            users.set_key(user_id, 'wrapped key', cb);
                         });
                 },
                 "succesfully": function (r) {
@@ -264,10 +224,10 @@ suite.addBatch(
                 },
                 "which": {
                     topic: function () {
-                        var that = this;
+                        var cb = this.callback;
                         users.get_account(
                             TEST_EMAIL, function (user_id) {
-                                users.get_key(user_id, that.callback);
+                                users.get_key(user_id, cb);
                             });
                     },
                     "can be read": function (wrapped_key) {
@@ -275,10 +235,10 @@ suite.addBatch(
                     },
                     "cannot": {
                         topic: function () {
-                            var that = this;
+                            var cb = this.callback;
                             users.get_account(
                                 TEST_EMAIL, function (user_id) {
-                                    users.set_key(user_id, 'another wrapped key', that.callback);
+                                    users.set_key(user_id, 'another wrapped key', cb);
                                 });
                         },
                         "be overwritten": function (r) {
@@ -286,22 +246,14 @@ suite.addBatch(
                         },
                         "lose its value": {
                             topic: function () {
-                                var that = this;
+                                var cb = this.callback;
                                 users.get_account(
                                     TEST_EMAIL, function (user_id) {
-                                        users.get_key(user_id, that.callback);
+                                        users.get_key(user_id, cb);
                                     });
                             },
                             "once it has been set": function (wrapped_key) {
                                 assert.strictEqual(wrapped_key, 'wrapped key');
-                            },
-                            "until the user is deleted": {
-                                topic: function () {
-                                    users.delete_user(TEST_EMAIL, this.callback);
-                                },
-                                "successfully": function () {
-                                    assert.ok(true); // TODO: check for lack of errors
-                                }
                             }
                         }
                     }
@@ -309,6 +261,28 @@ suite.addBatch(
             }
         }
     });
+
+// Tear down / test account deletion
+suite.addBatch(
+    {
+        "account deletion": {
+            topic: function () {
+                users.delete_user(TEST_EMAIL, this.callback);
+            },
+            "works": function () {
+                assert.ok(true); // TODO: once we return errors, this won't have to be so pointless
+            },
+            "makes the account": {
+                topic: function () {
+                    users.account_exists(TEST_EMAIL, this.callback);
+                },
+                "disappear": function (r){
+                    assert.ok(!r);
+                }
+            }
+        }
+    }
+);
 
 // run or export the suite.
 if (process.argv[1] === __filename) suite.run();
