@@ -62,7 +62,7 @@ suite.addBatch(
             },
             "has no notes": function (r) {
                 assert.isArray(r);
-                assert.strictEqual(r.length, 0);
+                assert.isEmpty(r);
             },
             "can create a new note": {
                 topic: function () {
@@ -81,7 +81,7 @@ suite.addBatch(
                 },
                 "that exists": function (r) {
                     assert.isArray(r);
-                    assert.strictEqual(r.length, 1);
+                    assert.lengthOf(r, 1);
                 },
                 "that looks reasonable": function (r) {
                     var element = r[0];
@@ -133,7 +133,7 @@ suite.addBatch(
             },
             "returns the expected array": function (r) {
                 assert.isArray(r);
-                assert.strictEqual(r.length, data.length + 1);
+                assert.lengthOf(r, data.length + 1);
             },
             "gives non-deleted notes": function (r) {
                 r.forEach(function (note) {
@@ -161,7 +161,7 @@ suite.addBatch(
                 },
                 "successfully": function (r) {
                     assert.isArray(r);
-                    assert.strictEqual(r.length, data.length + 1);
+                    assert.lengthOf(r, data.length + 1);
                     r.forEach(function (note) {
                                   assert.strictEqual(note.deleted, 1);
                               });
@@ -183,7 +183,7 @@ suite.addBatch(
                     },
                     "successfully": function (r) {
                         assert.isArray(r);
-                        assert.strictEqual(r.length, data.length + 1);
+                        assert.lengthOf(r, data.length + 1);
                         r.forEach(function (note) {
                                       assert.strictEqual(note.deleted, 0);
                                   });
