@@ -69,32 +69,25 @@ suite.addBatch(
                     var cb = this.callback;
                     notes.create_note(
                         "Note 1", "Content 1", userId, function () {
-                            notes.get_notes(
-                                userId, function (r) {
-                                    var note_id = r[0].id;
-                                    notes.view_note(
-                                        note_id, userId, function (note) {
-                                            cb(r, note);
-                                        });
-                                });
+                            notes.get_notes(userId, cb);
                         });
                 },
-                "that exists": function (r) {
+                "successfully": function (r) {
                     assert.isArray(r);
                     assert.lengthOf(r, 1);
                 },
-                "that looks reasonable": function (r) {
-                    var element = r[0];
-                    assert.isObject(element);
-                    assert.isNumber(element.id);
-                    assert.ok(element.id > 0);
-                    assert.strictEqual(element.deleted, 0);
-                    assert.strictEqual(element.name, 'Note 1');
-                },
-                "that has the expected content": function (r, note) {
-                    assert.isObject(note);
-                    assert.strictEqual(note.content, 'Content 1');
-                    assert.strictEqual(note.name, r[0].name);
+                "that ": {
+                    topic: function (allNotes) {
+                        notes.view_note(allNotes[0].id, userId, this.callback);
+                    },
+                    "looks reasonable": function (note) {
+                        assert.isObject(note);
+                        assert.strictEqual(note.name, 'Note 1');
+                    },
+                    "has the expected content": function (note) {
+                        assert.isObject(note);
+                        assert.strictEqual(note.content, 'Content 1');
+                    }
                 }
             }
         }
@@ -106,8 +99,6 @@ var data = [
     {name: 'Note 3', content: 'Content 3'},
     {name: 'Note 4', content: 'Content 4'}
 ];
-
-var dbNotes; // Will hold the last note objects from the DB
 
 // TODO: test error conditions
 suite.addBatch(
@@ -122,11 +113,7 @@ suite.addBatch(
                             v.name, v.content, userId, function () {
                                 count += 1;
                                 if (count === data.length) {
-                                    notes.get_notes(
-                                        userId, function (r) {
-                                            dbNotes = r;
-                                            cb(r);
-                                        });
+                                    notes.get_notes(userId, cb);
                                 }
                             });
                     });
@@ -136,25 +123,22 @@ suite.addBatch(
                 assert.lengthOf(r, data.length + 1);
             },
             "gives non-deleted notes": function (r) {
-                r.forEach(function (note) {
-                              assert.strictEqual(note.deleted, 0);
-                          });
+                r.forEach(
+                    function (note) {
+                        assert.strictEqual(note.deleted, 0);
+                    });
             },
             "that can be deleted": {
-                topic: function () {
+                topic: function (allNotes) {
                     var cb = this.callback;
                     var count = 0;
-                    dbNotes.forEach(
+                    allNotes.forEach(
                         function (note) {
                             notes.delete_note(
                                 note.id, userId, function () {
                                     count += 1;
                                     if (count === data.length) {
-                                        notes.get_notes(
-                                            userId, function (r) {
-                                                dbNotes = r;
-                                                cb(r);
-                                            });
+                                        notes.get_notes(userId, cb);
                                     }
                                 });
                         });
@@ -162,15 +146,16 @@ suite.addBatch(
                 "successfully": function (r) {
                     assert.isArray(r);
                     assert.lengthOf(r, data.length + 1);
-                    r.forEach(function (note) {
-                                  assert.strictEqual(note.deleted, 1);
-                              });
+                    r.forEach(
+                        function (note) {
+                            assert.strictEqual(note.deleted, 1);
+                        });
                 },
                 "and undeleted": {
-                    topic: function () {
+                    topic: function (allNotes) {
                         var cb = this.callback;
                         var count = 0;
-                        dbNotes.forEach(
+                        allNotes.forEach(
                             function (note) {
                                 notes.undelete_note(
                                     note.id, userId, function () {
@@ -184,9 +169,10 @@ suite.addBatch(
                     "successfully": function (r) {
                         assert.isArray(r);
                         assert.lengthOf(r, data.length + 1);
-                        r.forEach(function (note) {
-                                      assert.strictEqual(note.deleted, 0);
-                                  });
+                        r.forEach(
+                            function (note) {
+                                assert.strictEqual(note.deleted, 0);
+                            });
                     }
                 }
             }
