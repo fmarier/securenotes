@@ -10,28 +10,18 @@ function unwrapKey(assertion, wrappedKey, cb) {
                }, 2000);
 }
 
-function hmac_sha256(s) {
-    return 'TODO';
-}
-
 function encrypt() {
     $('#note-content').attr('readonly', true);
     $('#encrypt-button').hide();
     $('#encryption-message').text('Encrypting message...');
 
     var keypair = loadLocalKey();
-
     var plaintext = $('#note-content').val();
-    var iv = 'TODO';
-
     var encryption = jwcrypto.encrypt(plaintext, keypair);
-    var mac = hmac_sha256(JSON.stringify(encryption)); // TODO: do we need to mac the result?
-
-    var data = jwcryptoutils.base64urlencode(JSON.stringify({encryption: encryption, mac: mac}));
 
     setTimeout(
         function () {
-            $('#note-content').val(data);
+            $('#note-content').val(encryption);
             $('#encryption-message').text('Encryption completed');
             $('#save-button').removeAttr('disabled');
         }, 1000);
@@ -41,15 +31,8 @@ function decrypt() {
     $('#decrypt-button').hide();
     $('#decryption-message').text('Decrypting message...');
 
-    var plaintext;
     var keypair = loadLocalKey();
-
-    var data = JSON.parse(jwcryptoutils.base64urldecode($('#note-content').text()));
-
-    var mac = hmac_sha256(JSON.stringify(data.encryption));
-    if (mac === data.mac) {
-        plaintext = jwcrypto.decrypt(data.encryption, keypair);
-    }
+    var plaintext = jwcrypto.decrypt($('#note-content').text(), keypair);
 
     setTimeout(
         function () {
@@ -60,6 +43,7 @@ function decrypt() {
 
 function generateUserKey(assertion, cb) {
     setTimeout(function () {
+                   // TODO: generate a random key
                    var key = jwcryptoutils.base64urlencode(JSON.stringify(
                        {encryptionKey: jwcryptolibs.sjcl.hash.sha256.hash('secret encryption key'),
                         macKey: jwcryptolibs.sjcl.hash.sha256.hash('secret mac key')}));
