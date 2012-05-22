@@ -15,9 +15,9 @@ function encrypt() {
     $('#encrypt-button').hide();
     $('#encryption-message').text('Encrypting message...');
 
-    var keypair = loadLocalKey();
+    var encryptionKey = loadLocalKey();
     var plaintext = $('#note-content').val();
-    var encryption = jwcrypto.encrypt(plaintext, keypair);
+    var encryption = jwcrypto.encrypt(plaintext, encryptionKey);
 
     setTimeout(
         function () {
@@ -31,8 +31,8 @@ function decrypt() {
     $('#decrypt-button').hide();
     $('#decryption-message').text('Decrypting message...');
 
-    var keypair = loadLocalKey();
-    var plaintext = jwcrypto.decrypt($('#note-content').text(), keypair);
+    var encryptionKey = loadLocalKey();
+    var plaintext = jwcrypto.decrypt($('#note-content').text(), encryptionKey);
 
     setTimeout(
         function () {
@@ -44,9 +44,7 @@ function decrypt() {
 function generateUserKey(assertion, cb) {
     setTimeout(function () {
                    // TODO: generate a random key
-                   var key = jwcryptoutils.base64urlencode(JSON.stringify(
-                       {encryptionKey: jwcryptolibs.sjcl.hash.sha256.hash('secret encryption key'),
-                        macKey: jwcryptolibs.sjcl.hash.sha256.hash('secret mac key')}));
+                   var key = jwcryptoutils.base64urlencode(jwcryptolibs.sjcl.hash.sha256.hash('secret encryption key'));
                    var wrappedKey = key.split('').reverse().join(''); // TODO: actually wrap the key!
 
                    cb(key, wrappedKey);
@@ -54,12 +52,12 @@ function generateUserKey(assertion, cb) {
 }
 
 function loadLocalKey() {
-    var keypair = localStorage.getItem('keypair');
+    var encryptionKey = localStorage.getItem('encryptionkey');
     // TODO: if it's not available, should we redirect to /loggedin?
-    return JSON.parse(keypair);
+    return encryptionKey;
 }
 
-function storeLocalKey(realKey) {
-    var decodedKey = jwcryptoutils.base64urldecode(realKey);
-    localStorage.setItem('keypair', decodedKey);
+function storeLocalKey(plainKey) {
+    var decodedKey = jwcryptoutils.base64urldecode(plainKey);
+    localStorage.setItem('encryptionkey', decodedKey);
 }
