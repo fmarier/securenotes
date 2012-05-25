@@ -1,14 +1,5 @@
 // FIXME: these /lib/ (hardcoded in bidbundle.js) are a bit undesirable since they don't match the file layout of this project
 var jwcrypto = require('./lib/jwcrypto.js');
-var jwcryptoutils = require('./lib/utils.js');
-var jwcryptolibs = require('./libs/minimal.js');
-
-function unwrapKey(assertion, wrappedKey, cb) {
-    setTimeout(function () {
-                   var key = wrappedKey.split('').reverse().join(''); // TODO: actually unwrap the key
-                   cb(key);
-               }, 2000);
-}
 
 function encrypt() {
     $('#note-content').attr('readonly', true);
@@ -41,23 +32,11 @@ function decrypt() {
         }, 1000);
 }
 
-function generateUserKey(assertion, cb) {
-    setTimeout(function () {
-                   // TODO: generate a random key
-                   var key = jwcryptoutils.base64urlencode(jwcryptolibs.sjcl.hash.sha256.hash('secret encryption key'));
-                   var wrappedKey = key.split('').reverse().join(''); // TODO: actually wrap the key!
-
-                   cb(key, wrappedKey);
-               }, 2000);
-}
-
 function loadLocalKey() {
-    var encryptionKey = localStorage.getItem('encryptionkey');
     // TODO: if it's not available, should we redirect to /loggedin?
-    return encryptionKey;
+    return localStorage.getItem('encryptionkey');
 }
 
 function storeLocalKey(plainKey) {
-    var decodedKey = jwcryptoutils.base64urldecode(plainKey);
-    localStorage.setItem('encryptionkey', decodedKey);
+    localStorage.setItem('encryptionkey', plainKey);
 }

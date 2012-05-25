@@ -1,24 +1,23 @@
 function doUnwrap(assertion, wrappedKey) {
     $("#message").text('Unwrapping your key...');
 
-    unwrapKey(
-        assertion, wrappedKey, function (realKey) {
+    navigator.id.secret.unwrap(
+        assertion, wrappedKey, function (plainKey) {
             localStorage.removeItem('assertion');
-            storeLocalKey(realKey);
+            storeLocalKey(plainKey);
 
             $("#message").text('All done');
             window.location = '/list';
         });
-
 }
 
 function doGenerate(assertion) {
     $("#message").text('Generating a key...');
 
-    generateUserKey(
-        assertion, function (realKey, wrappedKey) {
+    navigator.id.secret.generateAndWrap(
+        assertion, function (plainKey, wrappedKey) {
             localStorage.removeItem('assertion');
-            storeLocalKey(realKey);
+            storeLocalKey(plainKey);
 
             // Send wrapped key to the server to be stored in the DB
             var data = {wrappedKey: wrappedKey}; // TODO: add CSRF protection
