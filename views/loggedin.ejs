@@ -1,20 +1,15 @@
 <script src="<%= includejs %>"></script>
-<script src="/jwcrypto.js"></script>
-<script src="/crypto.js"></script>
+<script src="/jwcrypto.js"></script> <!-- TODO: this should be loaded by BID -->
 <script src="/loggedin.js"></script>
 
 <p id="message"></p>
 
 <script>
-var assertion = localStorage.getItem('assertion');
-if (!assertion) {
-    window.location = '/login';
-}
-
+var identity = "<%= identity %>";
 <% if (wrappedKey) { %>
 var wrappedKey = "<%= wrappedKey %>";
-doUnwrap(assertion, wrappedKey);
+doUnwrap(identity, wrappedKey);
 <% } else { %>
-doGenerate(assertion);
+doGenerate(identity);
 <% } %>
 </script>

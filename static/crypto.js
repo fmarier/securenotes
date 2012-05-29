@@ -6,7 +6,7 @@ function encrypt() {
     $('#encrypt-button').hide();
     $('#encryption-message').text('Encrypting message...');
 
-    var encryptionKey = loadLocalKey();
+    var encryptionKey = localStorage.getItem('encryptionkey');
     var plaintext = $('#note-content').val();
     var encryption = jwcrypto.encrypt(plaintext, encryptionKey);
 
@@ -22,7 +22,7 @@ function decrypt() {
     $('#decrypt-button').hide();
     $('#decryption-message').text('Decrypting message...');
 
-    var encryptionKey = loadLocalKey();
+    var encryptionKey = localStorage.getItem('encryptionkey');
     var plaintext = jwcrypto.decrypt($('#note-content').text(), encryptionKey);
 
     setTimeout(
@@ -30,13 +30,4 @@ function decrypt() {
             $('#note-content').text(plaintext);
             $('#decryption-message').text('Decryption completed');
         }, 1000);
-}
-
-function loadLocalKey() {
-    // TODO: if it's not available, should we redirect to /loggedin?
-    return localStorage.getItem('encryptionkey');
-}
-
-function storeLocalKey(plainKey) {
-    localStorage.setItem('encryptionkey', plainKey);
 }

@@ -188,6 +188,9 @@ suite.addBatch(
             "has no key": function (wrapped_key) {
                 assert.isNull(wrapped_key);
             },
+            "has the right identity": function (wrapped_key, identity) {
+                assert.strictEqual(identity, TEST_EMAIL);
+            },
             "can set a key": {
                 topic: function () {
                     users.set_key(userId, 'wrapped key', this.callback);
@@ -202,6 +205,9 @@ suite.addBatch(
                     "can be read": function (wrapped_key) {
                         assert.strictEqual(wrapped_key, 'wrapped key');
                     },
+                    "is associated with the right identity": function (wrapped_key, identity) {
+                        assert.strictEqual(identity, TEST_EMAIL);
+                    },
                     "cannot": {
                         topic: function () {
                             users.set_key(userId, 'another wrapped key', this.callback);
@@ -215,6 +221,9 @@ suite.addBatch(
                             },
                             "once it has been set": function (wrapped_key) {
                                 assert.strictEqual(wrapped_key, 'wrapped key');
+                            },
+                            "or its associated identity": function (wrapped_key, identity) {
+                                assert.strictEqual(identity, TEST_EMAIL);
                             }
                         }
                     }
