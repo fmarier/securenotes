@@ -36,7 +36,7 @@ app.use(express.logger({
 app.use(express.limit("10kb"));
 
 /*
-if (config.get('scheme') == 'https') {
+if (config.get('scheme') === 'https') {
   app.use(function(req, resp, next) {
     // expires in 30 days, include subdomains like www
     resp.setHeader("Strict-Transport-Security", "max-age=2592000; includeSubdomains");
