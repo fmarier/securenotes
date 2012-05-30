@@ -14,6 +14,7 @@ var suite = vows.describe("basic tests");
 suite.options.error = false;
 
 const TEST_EMAIL = 'person@example.com';
+const TEST_EMAIL_INVALID = 'person.example.com';
 
 // Setup / test account creation
 suite.addBatch(
@@ -30,7 +31,7 @@ suite.addBatch(
                     users.account_exists(TEST_EMAIL, this.callback);
                 },
                 "which exists": function (r){
-                    assert.ok(r);
+                    assert.strictEqual(r, true);
                 },
                 "which contains": {
                     topic: function () {
@@ -39,6 +40,36 @@ suite.addBatch(
                     "a reasonable ID": function (r) {
                         assert.isNumber(r);
                         assert.strictEqual(r > 0, true);
+                    }
+                }
+            }
+        }
+    }
+);
+
+// Error during user creation
+suite.addBatch(
+    {
+        "account creation using an invalid email address": {
+            topic: function () {
+                users.create_user(TEST_EMAIL_INVALID, this.callback);
+            },
+            "fails as expected": function (r) {
+                assert.strictEqual(r, undefined);
+            },
+            "does not": {
+                topic: function () {
+                    users.account_exists(TEST_EMAIL_INVALID, this.callback);
+                },
+                "produce an account": function (r){
+                    assert.strictEqual(r, false);
+                },
+                "return a record": {
+                    topic: function () {
+                        users.get_account(TEST_EMAIL_INVALID, this.callback);
+                    },
+                    "from the database": function (r) {
+                        assert.strictEqual(r, null);
                     }
                 }
             }
