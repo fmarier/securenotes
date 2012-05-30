@@ -15,6 +15,9 @@ suite.options.error = false;
 
 const TEST_EMAIL = 'person@example.com';
 const TEST_EMAIL_INVALID = 'person.example.com';
+const TEST_WRAPPED_KEY1 = 'wrappedKey1';
+const TEST_WRAPPED_KEY2 = 'wrapped_key-2';
+const TEST_WRAPPED_INVALID = 'wrapped key';
 
 // Setup / test account creation
 suite.addBatch(
@@ -224,7 +227,7 @@ suite.addBatch(
             },
             "can set a key": {
                 topic: function () {
-                    users.set_key(userId, 'wrapped key', this.callback);
+                    users.set_key(userId, TEST_WRAPPED_KEY1, this.callback);
                 },
                 "succesfully": function (r) {
                     assert.ok(true); // TODO: check for lack of errors
@@ -234,14 +237,14 @@ suite.addBatch(
                         users.get_key(userId, this.callback);
                     },
                     "can be read": function (wrapped_key) {
-                        assert.strictEqual(wrapped_key, 'wrapped key');
+                        assert.strictEqual(wrapped_key, TEST_WRAPPED_KEY1);
                     },
                     "is associated with the right identity": function (wrapped_key, identity) {
                         assert.strictEqual(identity, TEST_EMAIL);
                     },
                     "cannot": {
                         topic: function () {
-                            users.set_key(userId, 'another wrapped key', this.callback);
+                            users.set_key(userId, TEST_WRAPPED_KEY2, this.callback);
                         },
                         "be overwritten": function (r) {
                             assert.strictEqual(r, '{"success": true}');
@@ -251,7 +254,7 @@ suite.addBatch(
                                 users.get_key(userId, this.callback);
                             },
                             "once it has been set": function (wrapped_key) {
-                                assert.strictEqual(wrapped_key, 'wrapped key');
+                                assert.strictEqual(wrapped_key, TEST_WRAPPED_KEY1);
                             },
                             "or its associated identity": function (wrapped_key, identity) {
                                 assert.strictEqual(identity, TEST_EMAIL);
