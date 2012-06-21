@@ -4,6 +4,14 @@
         "user": "nodeuser",
         "password": "nodeuser"
     },
+    "browserid": {
+        "includejs": "http://127.0.0.1:10002/include.js",
+        "verifier": {
+            "host": "127.0.0.1",
+            "port": 10000,
+            "scheme": "http"
+        }
+    },
     "bind_to": {
         "port": 8000
     }
