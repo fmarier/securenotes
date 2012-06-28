@@ -1,0 +1,11 @@
+{
+  "processes": [
+    "bin/securenotes_server.js"
+  ],
+  "packages": [
+    "mysql-server"
+  ],
+  "hooks": {
+    "postcreate": "scripts/init_db.sh"
+  }
+}
