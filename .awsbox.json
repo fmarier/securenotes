@@ -6,6 +6,6 @@
     "mysql-server"
   ],
   "hooks": {
-    "postcreate": "scripts/init_db.sh"
+    "postcreate": "scripts/post_create.sh"
   }
 }
