@@ -3,8 +3,8 @@
     "bin/securenotes_server.js"
   ],
   "env": {
-    "BROWSERID_INCLUDEJS": "https://login.keywrapping.personatest.org/include.js",
-    "BROWSERID_VERIFIER_HOST": "verifier.login.keywrapping.personatest.org",
+    "BROWSERID_INCLUDEJS": "https://keywrapping.personatest.org/include.js",
+    "BROWSERID_VERIFIER_HOST": "keywrapping.personatest.org",
     "BROWSERID_VERIFIER_PORT": "443",
     "BROWSERID_VERIFIER_SCHEME": "https"
   },
