@@ -6,7 +6,8 @@
     "BROWSERID_INCLUDEJS": "https://keywrapping.personatest.org/include.js",
     "BROWSERID_VERIFIER_HOST": "keywrapping.personatest.org",
     "BROWSERID_VERIFIER_PORT": "443",
-    "BROWSERID_VERIFIER_SCHEME": "https"
+    "BROWSERID_VERIFIER_SCHEME": "https",
+    "PUBLIC_URL": "https://securenotes.personatest.org"
   },
   "packages": [
     "mysql-server"
