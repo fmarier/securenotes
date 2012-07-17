@@ -31,9 +31,12 @@ This application currently requires three other components:
         cd ../keyserver && npm install
         cd ../securenotes && npm install
 
-4. Make BrowserID use our local version of jwcrypto:
+4. Make BrowserID and SecureNotes use our local version of jwcrypto:
 
         cd ../browserid/node_modules
+        rm -rf jwcrypto
+        ln -s ../../jwcrypto .
+        cd ../securenotes/node_modules
         rm -rf jwcrypto
         ln -s ../../jwcrypto .
 
